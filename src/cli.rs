@@ -1,4 +1,4 @@
-use clap::{Error, Parser};
+use clap::{Parser};
 
 #[derive(Parser)]
 #[command(name = "AnalytiK DB")]
