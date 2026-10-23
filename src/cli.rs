@@ -10,7 +10,7 @@ pub struct Cli {
 
 fn is_valid_command(s: &str) -> Result<String, String> {
     match s {
-        "demo-db" => Ok("demo-db".to_string()),
+        "schema" => Ok("schema".to_string()),
         _ => Err("Unknown command".to_string())
     }
 }
