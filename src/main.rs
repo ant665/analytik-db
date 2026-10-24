@@ -1,12 +1,14 @@
 use clap::Parser;
 
 mod cli;
-use cli::Cli;
+use cli::{AnalytikCli, Commands};
 
 mod command;
 use command::schema;
 
 fn main() {
-    let _cli = Cli::parse();
-    schema(None);
+    let cli = AnalytikCli::parse();
+    match &cli.command {
+        Commands::Schema => schema(None),
+    }
 }

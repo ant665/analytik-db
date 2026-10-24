@@ -1,17 +1,15 @@
-use clap::{Parser};
+use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
-#[command(name = "AnalytiK DB")]
+#[command(name = "analytik")]
+#[command(bin_name = "analytik")]
 #[command(about = "Gives you details about your data", long_about = None)]
-pub struct Cli {
-    #[arg(value_parser = is_valid_command)]
-    pub command: String,
+pub struct AnalytikCli {
+    #[command(subcommand)]
+    pub command: Commands,
 }
 
-fn is_valid_command(s: &str) -> Result<String, String> {
-    match s {
-        "schema" => Ok("schema".to_string()),
-        _ => Err("Unknown command".to_string())
-    }
+#[derive(Debug, Subcommand)]
+pub enum Commands {
+    Schema,
 }
-
