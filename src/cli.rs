@@ -1,4 +1,4 @@
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, Args};
 
 #[derive(Parser)]
 #[command(name = "analytik")]
@@ -12,4 +12,11 @@ pub struct AnalytikCli {
 #[derive(Debug, Subcommand)]
 pub enum Commands {
     Schema,
+    Filter(FilterArgs),
+}
+
+#[derive(Debug, Args)]
+pub struct FilterArgs {
+    #[arg(short, long)]
+    pub column: String,
 }

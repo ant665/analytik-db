@@ -1,11 +1,21 @@
 use arrow::{array::{Float64Array, GenericByteArray, Int64Array, PrimitiveArray, RecordBatch, StringArray}, datatypes::{DataType, Field, Float64Type, GenericStringType, Int64Type, Schema}};
 use std::sync::Arc;
 
+pub fn filter(opt_batch: Option<&RecordBatch>, col_name: &String) -> () {
+    let batch = match opt_batch {
+        Some(batch) => batch,
+        None => &sample_record_batch(),
+    };
+    let batch_col = batch
+            .column_by_name(col_name)
+            .expect("No column found for the given name");
+    println!("{:?}", batch_col);
+}
+
 pub fn schema(opt_batch: Option<&RecordBatch>) {
-    if let Some(batch) = opt_batch {
-        inspect_batch(batch);
-    } else {
-        inspect_batch(&sample_record_batch());
+    match opt_batch {
+        Some(batch) => inspect_batch(batch),
+        None => inspect_batch(&sample_record_batch()),
     }
 }
 
