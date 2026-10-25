@@ -1,10 +1,11 @@
 use arrow::{array::{Float64Array, GenericByteArray, Int64Array, PrimitiveArray, RecordBatch, Scalar, StringArray}, compute::filter_record_batch, datatypes::{DataType, Field, Float64Type, GenericStringType, Int64Type, Schema}};
+use arrow::util::pretty::pretty_format_batches;
 use arrow::compute::kernels::cmp;
 use std::sync::Arc;
 
 use crate::cli::FilterArgs;
 
-pub fn filter(opt_batch: Option<&RecordBatch>, args: &FilterArgs) -> () {
+pub fn filter(opt_batch: Option<&RecordBatch>, args: &FilterArgs) -> RecordBatch {
     let batch = match opt_batch {
         Some(batch) => batch,
         None => &sample_record_batch(),
@@ -13,17 +14,18 @@ pub fn filter(opt_batch: Option<&RecordBatch>, args: &FilterArgs) -> () {
             .column_by_name(&args.column)
             .expect("No column found for the given name");
 
-    
     let bool_masks = cmp::gt(batch_col, &Scalar::new(Int64Array::from_value(args.gt, 1))).unwrap();
     let filtered_batch = filter_record_batch(batch, &bool_masks).unwrap();
-    println!("{:?}", filtered_batch);
+    println!("{}", pretty_format_batches(&[filtered_batch.clone()]).unwrap());
+    filtered_batch
 }
 
-pub fn schema(opt_batch: Option<&RecordBatch>) {
-    match opt_batch {
-        Some(batch) => inspect_batch(batch),
-        None => inspect_batch(&sample_record_batch()),
-    }
+pub fn schema(opt_batch: Option<&RecordBatch>) -> () {
+    let batch = match opt_batch {
+        Some(batch) => batch,
+        None => &sample_record_batch(),
+    };
+    inspect_batch(batch);
 }
 
 fn inspect_batch(batch: &RecordBatch) -> () {

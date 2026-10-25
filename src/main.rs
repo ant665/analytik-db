@@ -10,6 +10,6 @@ fn main() {
     let cli = AnalytikCli::parse();
     match &cli.command {
         Commands::Schema => schema(None),
-        Commands::Filter(args) => filter(None, &args),
+        Commands::Filter(args) => { filter(None, &args); },
     }
 }
