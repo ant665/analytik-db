@@ -1,4 +1,4 @@
-use arrow::{array::{BooleanArray, Float64Array, GenericByteArray, Int64Array, PrimitiveArray, RecordBatch, Scalar, StringArray}, compute::filter_record_batch, datatypes::{DataType, Field, Float64Type, GenericStringType, Int64Type, Schema}};
+use arrow::{array::{Float64Array, GenericByteArray, Int64Array, PrimitiveArray, RecordBatch, Scalar, StringArray}, compute::filter_record_batch, datatypes::{DataType, Field, Float64Type, GenericStringType, Int64Type, Schema}};
 use arrow::compute::kernels::cmp;
 use std::sync::Arc;
 
