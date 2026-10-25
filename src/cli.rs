@@ -19,4 +19,6 @@ pub enum Commands {
 pub struct FilterArgs {
     #[arg(short, long)]
     pub column: String,
+    #[arg(short, long)]
+    pub gt: i64,
 }
