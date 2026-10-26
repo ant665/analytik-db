@@ -1,22 +1,40 @@
 use arrow::{array::{Float64Array, GenericByteArray, Int64Array, PrimitiveArray, RecordBatch, Scalar, StringArray}, compute::filter_record_batch, datatypes::{DataType, Field, Float64Type, GenericStringType, Int64Type, Schema}};
 use arrow::util::pretty::pretty_format_batches;
+use std::slice::from_ref;
 use arrow::compute::kernels::cmp;
 use std::sync::Arc;
 
-use crate::cli::FilterArgs;
+use crate::cli::{FilterArgs, SelectArgs};
+use crate::errors::AnalytikError;
+
+pub fn projection(opt_batch: Option<&RecordBatch>, args: &SelectArgs) -> RecordBatch {
+    let batch = match opt_batch {
+        Some(batch) => batch,
+        None => &sample_record_batch(),
+    };
+    let mut col_idx: Vec<usize> = Vec::new();
+    let schema = batch.schema();
+    for col in &args.columns {
+        col_idx.push(schema.index_of(&col).expect(&AnalytikError::ColumnNotFound(col.to_string()).to_string()));
+    }
+    let projected = batch.project(&col_idx).unwrap();
+    println!("{}", pretty_format_batches(from_ref(&projected)).unwrap());
+    projected
+}
 
 pub fn filter(opt_batch: Option<&RecordBatch>, args: &FilterArgs) -> RecordBatch {
     let batch = match opt_batch {
         Some(batch) => batch,
         None => &sample_record_batch(),
     };
-    let batch_col = batch
-            .column_by_name(&args.column)
-            .expect("No column found for the given name");
+    let batch_col = batch.column_by_name(&args.column)
+        .expect(&AnalytikError::ColumnNotFound(args.column.to_string()).to_string());
 
-    let bool_masks = cmp::gt(batch_col, &Scalar::new(Int64Array::from_value(args.gt, 1))).unwrap();
+    let bool_masks = cmp::gt(batch_col, &Scalar::new(Int64Array::from_value(args.gt, 1)))
+        .expect(&AnalytikError::InvalidColumnType { column: args.column.to_string() }.to_string());
+    
     let filtered_batch = filter_record_batch(batch, &bool_masks).unwrap();
-    println!("{}", pretty_format_batches(&[filtered_batch.clone()]).unwrap());
+    println!("{}", pretty_format_batches(from_ref(&filtered_batch)).unwrap());
     filtered_batch
 }
 

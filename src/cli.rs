@@ -13,6 +13,7 @@ pub struct AnalytikCli {
 pub enum Commands {
     Schema,
     Filter(FilterArgs),
+    Select(SelectArgs),
 }
 
 #[derive(Debug, Args)]
@@ -21,4 +22,10 @@ pub struct FilterArgs {
     pub column: String,
     #[arg(short, long)]
     pub gt: i64,
+}
+
+#[derive(Debug, Args)]
+pub struct SelectArgs {
+    #[arg(short, long, value_delimiter = ',', num_args = 1..)]
+    pub columns: Vec<String>,
 }
