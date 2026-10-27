@@ -1,18 +1,19 @@
 use clap::Parser;
 
 mod cli;
+mod errors;
+mod operations;
+mod utils;
+
 use cli::{AnalytikCli, Commands};
 
-mod command;
-use command::{filter, schema, projection};
-
-mod errors;
 
 fn main() {
     let cli = AnalytikCli::parse();
     match &cli.command {
-        Commands::Schema => schema(None),
-        Commands::Filter(args) => { filter(None, &args); },
-        Commands::Select(args) => { projection(None, &args); },
+        Commands::Schema => operations::schema(None),
+        Commands::Filter(args) => { let _ = operations::filter(None, &args); },
+        Commands::Select(args) => { let _ = operations::projection(None, &args); },
+        Commands::Stats(args) => { let _ = operations::stats(None, &args); },
     }
 }

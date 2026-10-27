@@ -14,6 +14,7 @@ pub enum Commands {
     Schema,
     Filter(FilterArgs),
     Select(SelectArgs),
+    Stats(StatsArgs),
 }
 
 #[derive(Debug, Args)]
@@ -28,4 +29,10 @@ pub struct FilterArgs {
 pub struct SelectArgs {
     #[arg(short, long, value_delimiter = ',', num_args = 1..)]
     pub columns: Vec<String>,
+}
+
+#[derive(Debug, Args)]
+pub struct StatsArgs {
+    #[arg(short, long, value_delimiter = ',', num_args = 1..)]
+    pub column: String,
 }
