@@ -1,4 +1,6 @@
-use arrow::array::RecordBatch;
+use arrow::{
+    array::{AsArray, Float64Array, RecordBatch}, compute::{max, min, sum}, datatypes::Float64Type,
+};
 use std::fmt::{Display, Formatter};
 
 use crate::cli::StatsArgs;
@@ -34,16 +36,24 @@ pub fn stats(opt_batch: Option<&RecordBatch>, args: &StatsArgs) -> Result<StatsD
     let batch_col = batch.column_by_name(&args.column)
         .ok_or_else(|| AnalytikError::ColumnNotFound(args.column.clone()))?;
 
-    batch_col.data_type().is_numeric()
-        .ok_or_else(|| AnalytikError::InvalidColumnType { column: args.column.clone() })?;
+
+    batch_col.as_any().downcast_ref::<Float64Array>().ok_or_else(|| AnalytikError::InvalidColumnType { column: args.column.clone() })?;
+
+    let max_value = max(&batch_col.as_primitive::<Float64Type>())
+        .ok_or_else(|| AnalytikError::InvalidColumnType { column: "".to_string() })?;
+    let min_value = min(&batch_col.as_primitive::<Float64Type>())
+        .ok_or_else(|| AnalytikError::InvalidColumnType { column: "".to_string() })?;
+    let sum = sum(&batch_col.as_primitive::<Float64Type>())
+        .ok_or_else(|| AnalytikError::InvalidColumnType { column: "".to_string() })?;
+    let average = sum / (batch_col.len() as f64 - batch_col.null_count() as f64);
 
     let stats_data: StatsData = StatsData {
         row_count: batch_col.len(),
         null_count: batch_col.null_count(),
-        max_value: 0.0,
-        min_value: 0.0,
-        sum: 0.0,
-        average: 0.0,
+        max_value,
+        min_value,
+        sum,
+        average,
     };
     println!("{}", stats_data);
     Ok(stats_data)
