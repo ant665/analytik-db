@@ -7,13 +7,16 @@ mod utils;
 
 use cli::{AnalytikCli, Commands};
 
+use crate::errors::AnalytikError;
 
-fn main() {
+
+fn main() -> Result<(), AnalytikError>{
     let cli = AnalytikCli::parse();
     match &cli.command {
-        Commands::Schema => operations::schema(None),
-        Commands::Filter(args) => { let _ = operations::filter(None, &args); },
-        Commands::Select(args) => { let _ = operations::projection(None, &args); },
-        Commands::Stats(args) => { let _ = operations::stats(None, &args); },
-    }
+        Commands::Schema => operations::schema(None)?,
+        Commands::Filter(args) => operations::filter(None, &args)?,
+        Commands::Select(args) => operations::projection(None, &args)?,
+        Commands::Stats(args) => operations::stats(None, &args)?,
+    };
+    Ok(())
 }

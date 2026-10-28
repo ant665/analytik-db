@@ -27,7 +27,7 @@ impl Display for StatsData {
     }
 }
 
-pub fn stats(opt_batch: Option<&RecordBatch>, args: &StatsArgs) -> Result<StatsData, AnalytikError> {
+pub fn stats(opt_batch: Option<&RecordBatch>, args: &StatsArgs) -> Result<RecordBatch, AnalytikError> {
     let batch = match opt_batch {
         Some(batch) => batch,
         None => &sample_record_batch(),
@@ -37,14 +37,14 @@ pub fn stats(opt_batch: Option<&RecordBatch>, args: &StatsArgs) -> Result<StatsD
         .ok_or_else(|| AnalytikError::ColumnNotFound(args.column.clone()))?;
 
 
-    batch_col.as_any().downcast_ref::<Float64Array>().ok_or_else(|| AnalytikError::InvalidColumnType { column: args.column.clone() })?;
+    batch_col.as_any().downcast_ref::<Float64Array>().ok_or_else(|| AnalytikError::InvalidColumnType(args.column.clone()))?;
 
     let max_value = max(&batch_col.as_primitive::<Float64Type>())
-        .ok_or_else(|| AnalytikError::InvalidColumnType { column: "".to_string() })?;
+        .ok_or_else(|| AnalytikError::InvalidColumnType(batch_col.data_type().to_string()))?;
     let min_value = min(&batch_col.as_primitive::<Float64Type>())
-        .ok_or_else(|| AnalytikError::InvalidColumnType { column: "".to_string() })?;
+        .ok_or_else(|| AnalytikError::InvalidColumnType(batch_col.data_type().to_string()))?;
     let sum = sum(&batch_col.as_primitive::<Float64Type>())
-        .ok_or_else(|| AnalytikError::InvalidColumnType { column: "".to_string() })?;
+        .ok_or_else(|| AnalytikError::InvalidColumnType(batch_col.data_type().to_string()))?;
     let average = sum / (batch_col.len() as f64 - batch_col.null_count() as f64);
 
     let stats_data: StatsData = StatsData {
@@ -56,5 +56,5 @@ pub fn stats(opt_batch: Option<&RecordBatch>, args: &StatsArgs) -> Result<StatsD
         average,
     };
     println!("{}", stats_data);
-    Ok(stats_data)
+    Ok(batch.to_owned())
 }

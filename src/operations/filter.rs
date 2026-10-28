@@ -19,7 +19,7 @@ pub fn filter(opt_batch: Option<&RecordBatch>, args: &FilterArgs) -> Result<Reco
         .ok_or_else(|| AnalytikError::ColumnNotFound(args.column.clone()))?;
 
     let bool_mask = cmp::gt(batch_col, &Scalar::new(Int64Array::from_value(args.gt, 1)))
-        .map_err(|_| AnalytikError::InvalidColumnType { column: args.column.clone() })?;
+        .map_err(|_| AnalytikError::InvalidColumnType(batch_col.data_type().to_string()))?;
     
     let filtered_batch = filter_record_batch(batch, &bool_mask)?;
 

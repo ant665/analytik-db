@@ -1,14 +1,15 @@
 use arrow::array::RecordBatch;
 
-use crate::utils::sample_record_batch;
+use crate::{errors::AnalytikError, utils::sample_record_batch};
 
 
-pub fn schema(opt_batch: Option<&RecordBatch>) -> () {
+pub fn schema(opt_batch: Option<&RecordBatch>) -> Result<RecordBatch, AnalytikError> {
     let batch = match opt_batch {
         Some(batch) => batch,
         None => &sample_record_batch(),
     };
     inspect_batch(batch);
+    Ok(batch.to_owned())
 }
 
 fn inspect_batch(batch: &RecordBatch) -> () {
