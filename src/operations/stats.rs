@@ -58,3 +58,61 @@ pub fn stats(opt_batch: Option<&RecordBatch>, args: &StatsArgs) -> Result<Record
     println!("{}", stats_data);
     Ok(batch.to_owned())
 }
+
+#[cfg(test)]
+mod tests {
+    use arrow::{
+        datatypes as arrow_schema,
+        array::record_batch,
+    };
+
+use super::*;
+
+    #[test]
+    fn stats_no_record_batch() {
+        assert_eq!(
+            stats(None, &StatsArgs { column: String::from("weight") }).unwrap(),
+            sample_record_batch()
+        )
+    }
+
+    #[test]
+    fn stats_with_record_batch() {
+        let exp_record_batch: RecordBatch = record_batch!(
+            ("id", Int64, [0,1,2]),
+            ("weight", Float64, [10.5, 20.7, 30.4]),
+            ("name", Utf8, ["Hugin", "Munin", "Odin"])
+        ).expect("Record Batch could not be created");
+        assert_eq!(
+            stats(Some(&exp_record_batch), &StatsArgs { column: String::from("weight") }).unwrap(),
+            exp_record_batch
+        )
+    }
+
+    #[test]
+    fn stats_invalid_type_column() {
+        let invalid_col_type_name = String::from("name");
+        let input_record_batch: RecordBatch = record_batch!(
+            ("id", Int64, [0,1,2]),
+            ("weight", Float64, [10.5, 20.7, 30.4]),
+            ("name", Utf8, ["Hugin", "Munin", "Odin"])
+        ).expect("Record Batch could not be created");
+        assert_eq!(
+            stats(Some(&input_record_batch), &StatsArgs { column: invalid_col_type_name.clone() }).err().unwrap().to_string(),
+            AnalytikError::InvalidColumnType(invalid_col_type_name).to_string()
+        )
+    }
+ 
+    #[test]
+    fn stats_unknown_column() {
+        let input_record_batch: RecordBatch = record_batch!(
+            ("id", Int64, [0,1,2]),
+            ("weight", Float64, [10.5, 20.7, 30.4]),
+            ("name", Utf8, ["Hugin", "Munin", "Odin"])
+        ).expect("Record Batch could not be created");
+        assert_eq!(
+            stats(Some(&input_record_batch), &StatsArgs { column: String::from("unknown") }).err().unwrap().to_string(),
+            AnalytikError::ColumnNotFound("unknown".to_string()).to_string()
+        )
+    }
+}
