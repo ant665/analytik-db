@@ -33,3 +33,32 @@ fn inspect_batch(batch: &RecordBatch) -> () {
         Arrays: {} bytes
     ", batch.get_array_memory_size());
 }
+
+#[cfg(test)]
+mod tests {
+    use arrow::{
+        datatypes as arrow_schema,
+        array::record_batch,
+    };
+
+use super::*;
+
+    #[test]
+    fn schema_no_record_batch() {
+        assert_eq!(
+            schema(None).unwrap(),
+            sample_record_batch()
+        )
+    }
+
+    #[test]
+    fn schema_with_record_batch() {
+        let exp_record_batch: RecordBatch = record_batch!(
+            ("id", Int64, [0,1,2])
+        ).expect("Record Batch could not be created");
+        assert_eq!(
+            schema(Some(&exp_record_batch)).unwrap(),
+            exp_record_batch
+        )
+    }
+}
