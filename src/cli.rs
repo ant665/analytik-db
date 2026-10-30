@@ -15,6 +15,7 @@ pub enum Commands {
     Filter(FilterArgs),
     Select(SelectArgs),
     Stats(StatsArgs),
+    Inspect(InspectArgs),
 }
 
 #[derive(Debug, Args)]
@@ -35,4 +36,10 @@ pub struct SelectArgs {
 pub struct StatsArgs {
     #[arg(short, long, value_delimiter = ',', num_args = 1..)]
     pub column: String,
+}
+
+#[derive(Debug, Args)]
+pub struct InspectArgs {
+    #[arg(short, long)]
+    pub file_name: String,
 }
