@@ -12,7 +12,7 @@ pub fn csv_to_reader(path: String) -> Reader<File> {
     ).unwrap());
 
     ReaderBuilder::new(file_schema)
-        .with_batch_size(2)
+        .with_batch_size(3)
         .with_header(true)
         .build(file)
         .unwrap()
