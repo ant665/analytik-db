@@ -14,7 +14,7 @@ pub fn csv_to_reader(path: String) -> Result<Reader<File>, AnalytikError> {
     )?);
 
     let reader = ReaderBuilder::new(file_schema)
-        .with_batch_size(3)
+        .with_batch_size(2)
         .with_header(true)
         .build(file)?;
 

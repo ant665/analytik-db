@@ -11,7 +11,6 @@ pub struct AnalytikCli {
 
 #[derive(Debug, Subcommand)]
 pub enum Commands {
-    Schema,
     Filter(FilterArgs),
     Select(SelectArgs),
     Stats(StatsArgs),

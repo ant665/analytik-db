@@ -7,7 +7,7 @@ use crate::cli::StatsArgs;
 use crate::errors::AnalytikError;
 use crate::utils::sample_record_batch;
 
-
+#[derive(Debug, PartialEq)]
 pub struct StatsData {
     row_count: usize,
     null_count: usize,
@@ -20,14 +20,14 @@ pub struct StatsData {
 impl Display for StatsData {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         write!(
-            f, 
+            f,
             "Count: {}\nNull Count: {}\nMax Value: {}\nMin Value: {}\nSum: {}\nAverage: {}\n",
             self.row_count, self.null_count, self.max_value, self.min_value, self.sum, self.average
         )
     }
 }
 
-pub fn stats(opt_batch: Option<&RecordBatch>, args: &StatsArgs) -> Result<RecordBatch, AnalytikError> {
+pub fn stats(opt_batch: Option<&RecordBatch>, args: &StatsArgs) -> Result<StatsData, AnalytikError> {
     let batch = match opt_batch {
         Some(batch) => batch,
         None => &sample_record_batch(),
@@ -55,8 +55,7 @@ pub fn stats(opt_batch: Option<&RecordBatch>, args: &StatsArgs) -> Result<Record
         sum,
         average,
     };
-    println!("{}", stats_data);
-    Ok(batch.to_owned())
+    Ok(stats_data)
 }
 
 #[cfg(test)]
@@ -71,8 +70,8 @@ use super::*;
     #[test]
     fn stats_no_record_batch() {
         assert_eq!(
-            stats(None, &StatsArgs { column: String::from("weight") }).unwrap(),
-            sample_record_batch()
+            stats(None, &StatsArgs { column: String::from("weight") }).is_ok(),
+            true
         )
     }
 
@@ -83,9 +82,18 @@ use super::*;
             ("weight", Float64, [10.5, 20.7, 30.4]),
             ("name", Utf8, ["Hugin", "Munin", "Odin"])
         ).expect("Record Batch could not be created");
+        let column_name: String = String::from("weight");
+        let batch_col = exp_record_batch.column_by_name(&column_name).unwrap();
         assert_eq!(
-            stats(Some(&exp_record_batch), &StatsArgs { column: String::from("weight") }).unwrap(),
-            exp_record_batch
+            stats(Some(&exp_record_batch), &StatsArgs { column: column_name }).unwrap(),
+            StatsData {
+                row_count: batch_col.len(),
+                null_count: batch_col.null_count(),
+                max_value: max(&batch_col.as_primitive::<Float64Type>()).unwrap(),
+                min_value: min(&batch_col.as_primitive::<Float64Type>()).unwrap(),
+                sum: sum(&batch_col.as_primitive::<Float64Type>()).unwrap(),
+                average: sum(&batch_col.as_primitive::<Float64Type>()).unwrap() / (batch_col.len() as f64 - batch_col.null_count() as f64),
+            }
         )
     }
 

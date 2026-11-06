@@ -1,8 +1,6 @@
 use arrow::{
     array::RecordBatch,
-    util::pretty::pretty_format_batches,
 };
-use std::slice::from_ref;
 
 use crate::cli::SelectArgs;
 use crate::errors::AnalytikError;
@@ -19,7 +17,6 @@ pub fn projection(opt_batch: Option<&RecordBatch>, args: &SelectArgs) -> Result<
         col_idx.push(schema.index_of(&col).map_err(|_| AnalytikError::ColumnNotFound(col.to_string()))?);
     }
     let projected = batch.project(&col_idx).unwrap();
-    println!("{}", pretty_format_batches(from_ref(&projected)).unwrap());
     Ok(projected)
 }
 
