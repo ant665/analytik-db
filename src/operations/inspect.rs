@@ -49,7 +49,7 @@ impl Display for Schema {
 
 
 pub fn inspect(args: &InspectArgs) -> Result<Schema, AnalytikError> {
-    let mut reader = csv_to_reader(args.file_name.clone())?;
+    let mut reader = csv_to_reader(args.file_name.clone(), args.infer_rows)?;
     let batch_schema = reader.schema();
     let mut rows_counter: usize = 0;
     let mut batches_counter: usize = 0;

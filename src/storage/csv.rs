@@ -4,12 +4,12 @@ use arrow::csv::{Reader, ReaderBuilder, infer_schema_from_files};
 
 use crate::errors::AnalytikError;
 
-pub fn csv_to_reader(path: String) -> Result<Reader<File>, AnalytikError> {
+pub fn csv_to_reader(path: String, infer_rows: usize) -> Result<Reader<File>, AnalytikError> {
     let file = File::open(&path)?;
     let file_schema = Arc::new(infer_schema_from_files(
         &vec![path],
         b',',
-        Some(10),
+        Some(infer_rows),
         true,
     )?);
 
