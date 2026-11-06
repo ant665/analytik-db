@@ -42,4 +42,6 @@ pub struct StatsArgs {
 pub struct InspectArgs {
     #[arg(short, long)]
     pub file_name: String,
+    #[arg(long, default_value_t = 10)]
+    pub infer_rows: usize,
 }

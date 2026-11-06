@@ -5,7 +5,7 @@ use crate::{cli::InspectArgs, errors::AnalytikError, storage::csv_to_reader, uti
 
 
 pub fn inspect(args: &InspectArgs) -> Result<RecordBatch, AnalytikError> {
-    let mut reader = csv_to_reader(args.file_name.clone());
+    let mut reader = csv_to_reader(args.file_name.clone())?;
     let batch_schema = reader.schema().to_string();
     let mut rows_counter: usize = 0;
     let mut batches_counter: usize = 0;

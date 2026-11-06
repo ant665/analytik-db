@@ -10,4 +10,7 @@ pub enum AnalytikError {
 
     #[error("Arrow Operation failed: {0}")]
     Arrow(#[from] arrow::error::ArrowError),
+
+    #[error("I/O operation failed: {0}")]
+    Io(#[from] std::io::Error),
 }
