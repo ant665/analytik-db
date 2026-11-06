@@ -16,7 +16,7 @@ pub fn projection(opt_batch: Option<&RecordBatch>, args: &SelectArgs) -> Result<
     for col in &args.columns {
         col_idx.push(schema.index_of(&col).map_err(|_| AnalytikError::ColumnNotFound(col.to_string()))?);
     }
-    let projected = batch.project(&col_idx).unwrap();
+    let projected = batch.project(&col_idx)?;
     Ok(projected)
 }
 

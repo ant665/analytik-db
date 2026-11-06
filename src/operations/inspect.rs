@@ -4,6 +4,7 @@ use arrow::{datatypes::SchemaRef};
 
 use crate::{cli::InspectArgs, errors::AnalytikError, storage::csv_to_reader};
 
+#[derive(Debug, PartialEq)]
 pub struct Schema {
     schema: SchemaRef,
     batches_number: usize,
@@ -62,4 +63,21 @@ pub fn inspect(args: &InspectArgs) -> Result<Schema, AnalytikError> {
         batches_number: batches_counter,
         rows_number: rows_counter
     })
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn inspect_file_not_found() {
+        let file_name: String = String::from("file_not_found");
+        let result = inspect(&InspectArgs { file_name, infer_rows: 10 });
+        match result {
+            Err(AnalytikError::Io(error)) => assert_eq!(error.kind(), std::io::ErrorKind::NotFound),
+            Err(error) => panic!("expected IO error, got: {error:?}"),
+            Ok(_) => panic!("Expected to fail but succeeded")
+        }
+    }
 }
