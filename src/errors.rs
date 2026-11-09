@@ -13,4 +13,7 @@ pub enum AnalytikError {
 
     #[error("I/O operation failed: {0}")]
     Io(#[from] std::io::Error),
+
+    #[error("Parquet operation failed: {0}")]
+    Parquet(#[from] parquet::errors::ParquetError),
 }

@@ -31,6 +31,9 @@ fn main() -> Result<(), AnalytikError> {
             let schema = operations::inspect(&args)?;
             println!("{}", schema);
         },
+        Commands::Convert(args) => {
+            operations::convert(&args)?;
+        },
     };
     Ok(())
 }

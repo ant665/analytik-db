@@ -15,6 +15,7 @@ pub enum Commands {
     Select(SelectArgs),
     Stats(StatsArgs),
     Inspect(InspectArgs),
+    Convert(ConvertArgs),
 }
 
 #[derive(Debug, Args)]
@@ -43,4 +44,12 @@ pub struct InspectArgs {
     pub file_name: String,
     #[arg(long, default_value_t = 10)]
     pub infer_rows: usize,
+}
+
+#[derive(Debug, Args)]
+pub struct ConvertArgs {
+    #[arg(long)]
+    pub input: String,
+    #[arg(long)]
+    pub output: String,
 }
