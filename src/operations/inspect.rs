@@ -1,8 +1,8 @@
-use std::fmt::{Display, Formatter};
+use std::{ffi::OsStr, fmt::{Display, Formatter}, path::Path};
 
-use arrow::{datatypes::SchemaRef};
+use arrow::{array::RecordBatchReader, datatypes::SchemaRef};
 
-use crate::{cli::InspectArgs, errors::AnalytikError, storage::csv_to_reader};
+use crate::{cli::InspectArgs, errors::AnalytikError, storage::{csv_to_reader, parquet_to_reader}};
 
 #[derive(Debug, PartialEq)]
 pub struct Schema {
@@ -48,8 +48,7 @@ impl Display for Schema {
 }
 
 
-pub fn inspect(args: &InspectArgs) -> Result<Schema, AnalytikError> {
-    let mut reader = csv_to_reader(args.file_name.clone(), args.infer_rows)?;
+fn record_batches_schema_inspection(mut reader: impl RecordBatchReader) -> Result<Schema, AnalytikError>  {
     let batch_schema = reader.schema();
     let mut rows_counter: usize = 0;
     let mut batches_counter: usize = 0;
@@ -63,6 +62,22 @@ pub fn inspect(args: &InspectArgs) -> Result<Schema, AnalytikError> {
         batches_number: batches_counter,
         rows_number: rows_counter
     })
+}
+
+
+pub fn inspect(args: &InspectArgs) -> Result<Schema, AnalytikError> {
+    let filename: String = args.file_name.clone();
+    match Path::new(&filename).extension().and_then(OsStr::to_str).map(|ext| ext.to_lowercase()).unwrap().as_str() {
+        "csv" => {
+            let reader = csv_to_reader(filename, args.infer_rows)?;
+            record_batches_schema_inspection(reader)
+        },
+        "parquet" => {
+            let reader = parquet_to_reader(filename)?;
+            record_batches_schema_inspection(reader)
+        },
+        other => return Err(AnalytikError::InvalidFileType(other.to_string())),
+    }
 }
 
 #[cfg(test)]

@@ -8,6 +8,9 @@ pub enum AnalytikError {
     #[error("Invalid column type: {0}")]
     InvalidColumnType(String),
 
+    #[error("Invalid file type: {0}")]
+    InvalidFileType(String),
+
     #[error("Arrow Operation failed: {0}")]
     Arrow(#[from] arrow::error::ArrowError),
 
