@@ -2,7 +2,7 @@ use std::{ffi::OsStr, fmt::{Display, Formatter}, path::Path};
 
 use arrow::{array::RecordBatchReader, datatypes::SchemaRef};
 
-use crate::{cli::InspectArgs, errors::AnalytikError, storage::{csv_to_reader, parquet_to_reader}};
+use crate::{cli::InspectArgs, errors::AnalytikError, storage::{csv_to_reader, parquet_to_metadata, parquet_to_reader}};
 
 #[derive(Debug, PartialEq)]
 pub struct Schema {
@@ -48,11 +48,11 @@ impl Display for Schema {
 }
 
 
-fn record_batches_schema_inspection(mut reader: impl RecordBatchReader) -> Result<Schema, AnalytikError>  {
+fn record_batches_schema_inspection(reader: impl RecordBatchReader) -> Result<Schema, AnalytikError>  {
     let batch_schema = reader.schema();
     let mut rows_counter: usize = 0;
     let mut batches_counter: usize = 0;
-    while let Some(batch) = reader.next() {
+    for batch in reader {
         let current_batch = &batch?;
         batches_counter += 1;
         rows_counter += current_batch.num_rows();
@@ -73,7 +73,11 @@ pub fn inspect(args: &InspectArgs) -> Result<Schema, AnalytikError> {
             record_batches_schema_inspection(reader)
         },
         "parquet" => {
-            let reader = parquet_to_reader(filename)?;
+            if args.metadata {
+                let metadata = parquet_to_metadata(&filename)?;
+                println!("{:?}", metadata);
+            }
+            let reader = parquet_to_reader(&filename)?;
             record_batches_schema_inspection(reader)
         },
         other => return Err(AnalytikError::InvalidFileType(other.to_string())),
@@ -88,7 +92,7 @@ mod tests {
     #[test]
     fn inspect_file_not_found() {
         let file_name: String = String::from("file_not_found");
-        let result = inspect(&InspectArgs { file_name, infer_rows: 10 });
+        let result = inspect(&InspectArgs { file_name, infer_rows: 10, metadata: false });
         match result {
             Err(AnalytikError::Io(error)) => assert_eq!(error.kind(), std::io::ErrorKind::NotFound),
             Err(error) => panic!("expected IO error, got: {error:?}"),

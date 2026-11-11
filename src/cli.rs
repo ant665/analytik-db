@@ -44,6 +44,8 @@ pub struct InspectArgs {
     pub file_name: String,
     #[arg(long, default_value_t = 10)]
     pub infer_rows: usize,
+    #[arg(short, long)]
+    pub metadata: bool,
 }
 
 #[derive(Debug, Args)]
