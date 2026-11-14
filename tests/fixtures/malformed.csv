@@ -1,0 +1,12 @@
+event_id,user_id,value
+1,alice,42.5
+2,bob,18.0
+3,alice,73.2
+4,charlie,91.0
+5,bob,35.5
+6,alice,41.0
+7,bob,19.0
+8,alice,74.2
+9,charlie,92.0
+10,bob,36.5
+11,alice,not-a-number

@@ -1,9 +1,19 @@
 use arrow::{
-    array::{Float64Array, GenericByteArray, Int64Array, PrimitiveArray, RecordBatch, StringArray}, 
-    datatypes::{DataType, Field, Float64Type, GenericStringType, Int64Type, Schema}
+    array::{Float64Array, GenericByteArray, Int64Array, PrimitiveArray, RecordBatch, StringArray},
+    datatypes::{DataType, Field, Float64Type, GenericStringType, Int64Type, Schema},
 };
 use std::sync::Arc;
 
+#[cfg(test)]
+use std::path::PathBuf;
+
+#[cfg(test)]
+pub fn fixture_path(name: &str) -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("tests")
+        .join("fixtures")
+        .join(name)
+}
 
 pub fn sample_record_batch() -> RecordBatch {
     let schema: Schema = Schema::new(vec![
@@ -12,12 +22,19 @@ pub fn sample_record_batch() -> RecordBatch {
         Field::new("name", DataType::Utf8, false),
     ]);
     let int64_arr: PrimitiveArray<Int64Type> = Int64Array::from(vec![0, 1, 2, 3, 4]);
-    let float64_arr: PrimitiveArray<Float64Type> = Float64Array::from(vec![Some(45.8), Some(69.2), Some(55.8), None, Some(78.1)]);
-    let string_arr: GenericByteArray<GenericStringType<i32>> = StringArray::from(vec!["Jacques", "Marine", "Eliott", "Patrick", "Natalie"]);
+    let float64_arr: PrimitiveArray<Float64Type> =
+        Float64Array::from(vec![Some(45.8), Some(69.2), Some(55.8), None, Some(78.1)]);
+    let string_arr: GenericByteArray<GenericStringType<i32>> =
+        StringArray::from(vec!["Jacques", "Marine", "Eliott", "Patrick", "Natalie"]);
     let batch = RecordBatch::try_new(
         Arc::new(schema),
-        vec![Arc::new(int64_arr), Arc::new(float64_arr), Arc::new(string_arr)],
-    ).unwrap();
+        vec![
+            Arc::new(int64_arr),
+            Arc::new(float64_arr),
+            Arc::new(string_arr),
+        ],
+    )
+    .unwrap();
     batch
 }
 

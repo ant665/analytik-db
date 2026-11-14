@@ -11,6 +11,9 @@ pub enum AnalytikError {
     #[error("Invalid file type: {0}")]
     InvalidFileType(String),
 
+    #[error("Invalid file exentsion: {0}")]
+    InvalidFileExtension(String),
+
     #[error("Arrow Operation failed: {0}")]
     Arrow(#[from] arrow::error::ArrowError),
 

@@ -1,5 +1,7 @@
 use arrow::{
-    array::{AsArray, Float64Array, RecordBatch}, compute::{max, min, sum}, datatypes::Float64Type,
+    array::{AsArray, Float64Array, RecordBatch},
+    compute::{max, min, sum},
+    datatypes::Float64Type,
 };
 use std::fmt::{Display, Formatter};
 
@@ -14,7 +16,7 @@ pub struct StatsData {
     max_value: f64,
     min_value: f64,
     sum: f64,
-    average:f64,
+    average: f64,
 }
 
 impl Display for StatsData {
@@ -27,17 +29,23 @@ impl Display for StatsData {
     }
 }
 
-pub fn stats(opt_batch: Option<&RecordBatch>, args: &StatsArgs) -> Result<StatsData, AnalytikError> {
+pub fn stats(
+    opt_batch: Option<&RecordBatch>,
+    args: &StatsArgs,
+) -> Result<StatsData, AnalytikError> {
     let batch = match opt_batch {
         Some(batch) => batch,
         None => &sample_record_batch(),
     };
 
-    let batch_col = batch.column_by_name(&args.column)
+    let batch_col = batch
+        .column_by_name(&args.column)
         .ok_or_else(|| AnalytikError::ColumnNotFound(args.column.clone()))?;
 
-
-    batch_col.as_any().downcast_ref::<Float64Array>().ok_or_else(|| AnalytikError::InvalidColumnType(args.column.clone()))?;
+    batch_col
+        .as_any()
+        .downcast_ref::<Float64Array>()
+        .ok_or_else(|| AnalytikError::InvalidColumnType(args.column.clone()))?;
 
     let max_value = max(&batch_col.as_primitive::<Float64Type>())
         .ok_or_else(|| AnalytikError::InvalidColumnType(batch_col.data_type().to_string()))?;
@@ -60,17 +68,20 @@ pub fn stats(opt_batch: Option<&RecordBatch>, args: &StatsArgs) -> Result<StatsD
 
 #[cfg(test)]
 mod tests {
-    use arrow::{
-        datatypes as arrow_schema,
-        array::record_batch,
-    };
+    use arrow::{array::record_batch, datatypes as arrow_schema};
 
-use super::*;
+    use super::*;
 
     #[test]
     fn stats_no_record_batch() {
         assert_eq!(
-            stats(None, &StatsArgs { column: String::from("weight") }).is_ok(),
+            stats(
+                None,
+                &StatsArgs {
+                    column: String::from("weight")
+                }
+            )
+            .is_ok(),
             true
         )
     }
@@ -78,21 +89,29 @@ use super::*;
     #[test]
     fn stats_with_record_batch() {
         let exp_record_batch: RecordBatch = record_batch!(
-            ("id", Int64, [0,1,2]),
+            ("id", Int64, [0, 1, 2]),
             ("weight", Float64, [10.5, 20.7, 30.4]),
             ("name", Utf8, ["Hugin", "Munin", "Odin"])
-        ).expect("Record Batch could not be created");
+        )
+        .expect("Record Batch could not be created");
         let column_name: String = String::from("weight");
         let batch_col = exp_record_batch.column_by_name(&column_name).unwrap();
         assert_eq!(
-            stats(Some(&exp_record_batch), &StatsArgs { column: column_name }).unwrap(),
+            stats(
+                Some(&exp_record_batch),
+                &StatsArgs {
+                    column: column_name
+                }
+            )
+            .unwrap(),
             StatsData {
                 row_count: batch_col.len(),
                 null_count: batch_col.null_count(),
                 max_value: max(&batch_col.as_primitive::<Float64Type>()).unwrap(),
                 min_value: min(&batch_col.as_primitive::<Float64Type>()).unwrap(),
                 sum: sum(&batch_col.as_primitive::<Float64Type>()).unwrap(),
-                average: sum(&batch_col.as_primitive::<Float64Type>()).unwrap() / (batch_col.len() as f64 - batch_col.null_count() as f64),
+                average: sum(&batch_col.as_primitive::<Float64Type>()).unwrap()
+                    / (batch_col.len() as f64 - batch_col.null_count() as f64),
             }
         )
     }
@@ -101,26 +120,69 @@ use super::*;
     fn stats_invalid_type_column() {
         let invalid_col_type_name = String::from("name");
         let input_record_batch: RecordBatch = record_batch!(
-            ("id", Int64, [0,1,2]),
+            ("id", Int64, [0, 1, 2]),
             ("weight", Float64, [10.5, 20.7, 30.4]),
             ("name", Utf8, ["Hugin", "Munin", "Odin"])
-        ).expect("Record Batch could not be created");
+        )
+        .expect("Record Batch could not be created");
         assert_eq!(
-            stats(Some(&input_record_batch), &StatsArgs { column: invalid_col_type_name.clone() }).err().unwrap().to_string(),
+            stats(
+                Some(&input_record_batch),
+                &StatsArgs {
+                    column: invalid_col_type_name.clone()
+                }
+            )
+            .err()
+            .unwrap()
+            .to_string(),
             AnalytikError::InvalidColumnType(invalid_col_type_name).to_string()
         )
     }
- 
+
     #[test]
     fn stats_unknown_column() {
         let input_record_batch: RecordBatch = record_batch!(
-            ("id", Int64, [0,1,2]),
+            ("id", Int64, [0, 1, 2]),
             ("weight", Float64, [10.5, 20.7, 30.4]),
             ("name", Utf8, ["Hugin", "Munin", "Odin"])
-        ).expect("Record Batch could not be created");
+        )
+        .expect("Record Batch could not be created");
         assert_eq!(
-            stats(Some(&input_record_batch), &StatsArgs { column: String::from("unknown") }).err().unwrap().to_string(),
+            stats(
+                Some(&input_record_batch),
+                &StatsArgs {
+                    column: String::from("unknown")
+                }
+            )
+            .err()
+            .unwrap()
+            .to_string(),
             AnalytikError::ColumnNotFound("unknown".to_string()).to_string()
         )
+    }
+
+    #[test]
+    fn stats_excludes_nulls_from_aggregates() {
+        let input = record_batch!(("value", Float64, [Some(10.0), None, Some(30.0)])).unwrap();
+
+        let result = stats(
+            Some(&input),
+            &StatsArgs {
+                column: "value".into(),
+            },
+        )
+        .unwrap();
+
+        assert_eq!(
+            result,
+            StatsData {
+                row_count: 3,
+                null_count: 1,
+                max_value: 30.0,
+                min_value: 10.0,
+                sum: 40.0,
+                average: 20.0,
+            }
+        );
     }
 }

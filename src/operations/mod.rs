@@ -1,12 +1,11 @@
 mod convert;
 mod filter;
+mod inspect;
 mod select;
 mod stats;
-mod inspect;
 
 pub use convert::convert;
 pub use filter::filter;
+pub use inspect::inspect;
 pub use select::projection;
 pub use stats::stats;
-pub use inspect::inspect;
-
