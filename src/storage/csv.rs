@@ -4,7 +4,7 @@ use arrow::csv::{Reader, ReaderBuilder, infer_schema_from_files};
 
 use crate::errors::AnalytikError;
 
-pub fn csv_to_reader(path: String, infer_rows: usize) -> Result<Reader<File>, AnalytikError> {
+pub fn csv_to_reader(path: String, infer_rows: usize, batch_size: usize) -> Result<Reader<File>, AnalytikError> {
     let file = File::open(&path)?;
     let file_schema = Arc::new(infer_schema_from_files(
         &vec![path],
@@ -14,7 +14,7 @@ pub fn csv_to_reader(path: String, infer_rows: usize) -> Result<Reader<File>, An
     )?);
 
     let reader = ReaderBuilder::new(file_schema)
-        .with_batch_size(2)
+        .with_batch_size(batch_size)
         .with_header(true)
         .build(file)?;
 
@@ -31,6 +31,7 @@ mod tests {
         let reader = csv_to_reader(
             fixture_path("events.csv").to_string_lossy().into_owned(),
             10,
+            2,
         )
         .unwrap();
 
@@ -47,6 +48,7 @@ mod tests {
         let reader = csv_to_reader(
             fixture_path("malformed.csv").to_string_lossy().into_owned(),
             10,
+            2,
         )
         .unwrap();
 

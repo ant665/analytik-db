@@ -4,7 +4,7 @@ use std::fs::File;
 use crate::{cli::ConvertArgs, errors::AnalytikError, storage::csv_to_reader};
 
 pub fn convert(args: &ConvertArgs) -> Result<(), AnalytikError> {
-    let reader = csv_to_reader(args.input.clone(), 10)?;
+    let reader = csv_to_reader(args.input.clone(), args.infer_rows, args.batch_size)?;
     let mut dest: File = File::create(args.output.clone())?;
 
     let mut writer: ArrowWriter<&mut File> =
@@ -32,6 +32,8 @@ mod tests {
         convert(&ConvertArgs {
             input: fixture_path("events.csv").to_string_lossy().into_owned(),
             output: output.to_string_lossy().into_owned(),
+            infer_rows: 10,
+            batch_size: 2,
         })
         .unwrap();
 
@@ -59,6 +61,8 @@ mod tests {
         let result = convert(&ConvertArgs {
             input: fixture_path("malformed.csv").to_string_lossy().into_owned(),
             output: output.to_string_lossy().into_owned(),
+            infer_rows: 10,
+            batch_size: 2,
         });
 
         assert!(matches!(result, Err(AnalytikError::Arrow(_))));
@@ -72,6 +76,8 @@ mod tests {
         let result = convert(&ConvertArgs {
             input: fixture_path("missing.csv").to_string_lossy().into_owned(),
             output: output.to_string_lossy().into_owned(),
+            infer_rows: 10,
+            batch_size: 2,
         });
 
         assert!(matches!(

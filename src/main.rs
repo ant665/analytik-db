@@ -27,8 +27,8 @@ fn main() -> Result<(), AnalytikError> {
             println!("{}", stats);
         }
         Commands::Inspect(args) => {
-            let schema = operations::inspect(&args)?;
-            println!("{}", schema);
+            let inspection = operations::inspect(&args)?;
+            println!("{}", inspection);
         }
         Commands::Convert(args) => {
             operations::convert(&args)?;
