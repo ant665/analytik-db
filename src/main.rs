@@ -3,6 +3,7 @@ use clap::Parser;
 use std::slice::from_ref;
 
 mod cli;
+mod dataset;
 mod errors;
 mod operations;
 mod storage;

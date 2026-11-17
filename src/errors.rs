@@ -11,6 +11,9 @@ pub enum AnalytikError {
     #[error("Invalid file type: {0}")]
     InvalidFileType(String),
 
+    #[error("File not found: {0}")]
+    FileNotFound(String),
+
     #[error("Invalid file extension: {0}")]
     InvalidFileExtension(String),
 
@@ -25,4 +28,25 @@ pub enum AnalytikError {
 
     #[error("Parquet operation failed: {0}")]
     Parquet(#[from] parquet::errors::ParquetError),
+}
+
+#[derive(Debug, Error)]
+pub enum DatasetError {
+    #[error("Invalid file type: {0}")]
+    InvalidFileType(String),
+
+    #[error("File not found: {0}")]
+    FileNotFound(String),
+
+    #[error("Invalid file extension: {0}")]
+    InvalidFileExtension(String),
+
+    #[error("The name of the dataset cannot be empty")]
+    EmptyName,
+
+    #[error("The name length should be between 1 and 30 characters")]
+    WrongSizeName,
+
+    #[error("The name should only contain alphanumeric characters with dashes and/or underscores")]
+    InvalidCharacters,
 }
