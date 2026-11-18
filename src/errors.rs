@@ -11,9 +11,6 @@ pub enum AnalytikError {
     #[error("Invalid file type: {0}")]
     InvalidFileType(String),
 
-    #[error("File not found: {0}")]
-    FileNotFound(String),
-
     #[error("Invalid file extension: {0}")]
     InvalidFileExtension(String),
 
@@ -30,7 +27,7 @@ pub enum AnalytikError {
     Parquet(#[from] parquet::errors::ParquetError),
 }
 
-#[derive(Debug, Error)]
+#[derive(Debug, Error, PartialEq, Eq)]
 pub enum DatasetError {
     #[error("Invalid file type: {0}")]
     InvalidFileType(String),

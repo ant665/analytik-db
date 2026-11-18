@@ -71,3 +71,74 @@ impl Dataset {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::utils::fixture_path;
+
+    #[test]
+    fn dataset_creation() {
+        let file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests").join("fixtures").join("events.csv");
+        let dataset = Dataset::new("test_dataset".to_string(), file_path.display().to_string()).unwrap();
+        assert_eq!(
+            dataset, 
+            Dataset {
+                name: "test_dataset".to_string(),
+                path: file_path,
+                format: FileFormat::Csv
+            }
+        );
+    }
+
+    #[test]
+    fn validate_name_successes() {
+        assert_eq!(Dataset::validate_name("test").unwrap(), ());
+        assert_eq!(Dataset::validate_name("_test_").unwrap(), ());
+        assert_eq!(Dataset::validate_name("-test-").unwrap(), ());
+        assert_eq!(Dataset::validate_name("TesT94").unwrap(), ());
+        assert_eq!(Dataset::validate_name("TesT-_000").unwrap(), ());
+    }
+
+    #[test]
+    fn validate_name_errors() {
+        assert_eq!(Dataset::validate_name("").unwrap_err(), DatasetError::EmptyName);
+        assert_eq!(Dataset::validate_name("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa").unwrap_err(), DatasetError::WrongSizeName);
+        assert_eq!(Dataset::validate_name("test!").unwrap_err(), DatasetError::InvalidCharacters);
+        assert_eq!(Dataset::validate_name("test test").unwrap_err(), DatasetError::InvalidCharacters);
+    }
+
+    #[test]
+    fn validate_path_success() {
+        assert_eq!(Dataset::validate_path(
+            fixture_path("events.csv").to_string_lossy().into_owned()).unwrap(),
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests").join("fixtures").join("events.csv")
+        );
+    }
+
+    #[test]
+    fn validate_path_errors() {
+        assert_eq!(
+            Dataset::validate_path("unknown_file".to_string()).unwrap_err(),
+            DatasetError::FileNotFound("unknown_file".to_string())
+        );
+        assert_eq!(
+            Dataset::validate_path(env!("CARGO_MANIFEST_DIR").to_string()).unwrap_err(),
+            DatasetError::InvalidFileType(env!("CARGO_MANIFEST_DIR").to_string())
+        );
+    }
+
+    #[test]
+    fn get_format_from_file_successes() {
+        let csv_valid_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests").join("fixtures").join("events.csv");
+        let parquet_valid_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests").join("fixtures").join("events.parquet");
+        assert_eq!(Dataset::get_format_from_file(&csv_valid_path).unwrap(), FileFormat::Csv);
+        assert_eq!(Dataset::get_format_from_file(&parquet_valid_path).unwrap(), FileFormat::Parquet);
+    }
+
+    #[test]
+    fn get_format_from_file_error() {
+        let json_valid_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests").join("fixtures").join("events.json");
+        assert_eq!(Dataset::get_format_from_file(&json_valid_path).unwrap_err(), DatasetError::InvalidFileExtension("json".to_string()));
+    }
+}
