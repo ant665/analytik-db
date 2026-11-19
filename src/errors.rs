@@ -28,15 +28,12 @@ pub enum AnalytikError {
 }
 
 #[derive(Debug, Error, PartialEq, Eq)]
-pub enum DatasetError {
+pub enum ValidationError {
     #[error("Invalid file type: {0}")]
     InvalidFileType(String),
 
     #[error("File not found: {0}")]
     FileNotFound(String),
-
-    #[error("Invalid file extension: {0}")]
-    InvalidFileExtension(String),
 
     #[error("The name of the dataset cannot be empty")]
     EmptyName,
@@ -46,4 +43,26 @@ pub enum DatasetError {
 
     #[error("The name should only contain alphanumeric characters with dashes and/or underscores")]
     InvalidCharacters,
+
+}
+
+#[derive(Debug, Error, PartialEq, Eq)]
+pub enum DatasetError {
+    #[error("Invalid file extension: {0}")]
+    InvalidFileExtension(String),
+
+    #[error("Validation Error: {0}")]
+    Validation(#[from] ValidationError),
+}
+
+#[derive(Debug, Error, PartialEq, Eq)]
+pub enum CatalogError {
+    #[error("There is already a dataset with the same name in this catalog")]
+    DuplicateDatasetName,
+
+    #[error("No dataset {0} found in catalog")]
+    DatasetNotFound(String),
+
+    #[error("Validation Error: {0}")]
+    Validation(#[from] ValidationError),
 }

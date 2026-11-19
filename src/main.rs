@@ -2,12 +2,14 @@ use arrow::util::pretty::pretty_format_batches;
 use clap::Parser;
 use std::slice::from_ref;
 
+mod catalog;
 mod cli;
 mod dataset;
 mod errors;
 mod operations;
 mod storage;
 mod utils;
+mod validation;
 
 use cli::{AnalytikCli, Commands};
 
